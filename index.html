@@ -1,1021 +1,901 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>here.now - 即时静态网站托管服务 | 完整教程文档</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'display': ['Outfit', 'sans-serif'],
-                        'body': ['Noto Sans SC', 'sans-serif'],
-                        'mono': ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc',
-                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
-                            800: '#075985', 900: '#0c4a6e',
-                        },
-                        accent: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', }
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'gradient': 'gradient 15s ease infinite',
-                    },
-                    keyframes: {
-                        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' }, },
-                        gradient: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' }, }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .dark .glass { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .mesh-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-size: 400% 400%; animation: gradient 15s ease infinite; }
-        .code-block { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        .code-block-light { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
-        .glow { box-shadow: 0 0 60px rgba(139, 92, 246, 0.3); }
-        .text-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .tab-active { border-bottom: 2px solid #0ea5e9; color: #0ea5e9; }
-        .dark .tab-active { border-bottom-color: #38bdf8; color: #38bdf8; }
-        .step-line { position: absolute; left: 24px; top: 60px; bottom: -20px; width: 2px; background: linear-gradient(to bottom, #0ea5e9, #8b5cf6); }
-        .endpoint-card { transition: all 0.3s ease; }
-        .endpoint-card:hover { transform: translateY(-4px); }
-    </style>
-</head>
-<body class="font-body bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-                        <span class="text-white font-display font-bold text-sm">H</span>
-                    </div>
-                    <span class="font-display font-bold text-xl tracking-tight">here.now</span>
-                </div>
-                <div class="hidden md:flex items-center gap-6">
-                    <a href="#features" class="text-sm font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">功能</a>
-                    <a href="#tutorial" class="text-sm font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">完整教程</a>
-                    <a href="#api" class="text-sm font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
-                    <a href="#examples" class="text-sm font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">示例</a>
-                    <a href="#faq" class="text-sm font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors">FAQ</a>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    </button>
-                    <a href="#tutorial" class="hidden sm:inline-flex px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors">开始学习</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>here.now 中文教程 — 免费即时 Web 托管</title>
+<meta name="description" content="here.now 中文使用教程，免费即时 Web 托管服务，专为 Agent 设计。">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-elevated: #1a1a26;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-glow: rgba(99,210,255,0.15);
+  --accent: #63d2ff;
+  --accent-dim: rgba(99,210,255,0.12);
+  --accent-warm: #ff9f43;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8a8fa8;
+  --text-muted: #5a5f78;
+  --success: #4ade80;
+  --warning: #fbbf24;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg-deep); }
+body {
+  font-family: 'Noto Sans SC', 'Space Grotesk', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-deep);
+  margin: 0;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgba(99,210,255,0.25); color: #fff; }
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        <div class="absolute inset-0 mesh-gradient opacity-10 dark:opacity-20"></div>
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-400/30 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-400/30 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s;"></div>
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-sm font-medium">免费 · 即时 · 无需账户</span>
-            </div>
-            <h1 class="font-display font-black text-5xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight mb-6">
-                <span class="block text-gradient">即时发布</span>
-                <span class="block text-slate-900 dark:text-white mt-2">静态网站</span>
-            </h1>
-            <p class="max-w-2xl mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
-                在几秒钟内部署您的静态网站。支持 HTML、CSS、JavaScript、图片和更多。<br>
-                匿名发布，24小时自动过期，或使用 API 密钥获得永久托管。
-            </p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="#tutorial" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-primary-600 to-accent-600 text-white font-semibold text-lg hover:shadow-lg hover:shadow-primary-500/25 transition-all transform hover:-translate-y-1">
-                    查看完整教程
-                </a>
-                <a href="#api" class="w-full sm:w-auto px-8 py-4 rounded-xl glass text-slate-800 dark:text-slate-200 font-semibold text-lg hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all">
-                    API 文档
-                </a>
-            </div>
-            <div class="mt-16 animate-float">
-                <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl glass glow">
-                    <span class="text-slate-500 dark:text-slate-400">https://</span>
-                    <span class="font-display font-bold text-primary-600 dark:text-primary-400">your-site</span>
-                    <span class="text-slate-500 dark:text-slate-400">.here.now</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-24 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-display font-bold text-4xl sm:text-5xl mb-4">核心功能</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-400">简单、快速、强大的静态网站托管服务</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="group p-8 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                    <h3 class="font-display font-bold text-xl mb-3">即时部署</h3>
-                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">只需几秒钟即可将您的网站上线。无需等待，无需复杂的配置流程。</p>
-                </div>
-                <div class="group p-8 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 hover:shadow-xl hover:shadow-accent-500/10">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </div>
-                    <h3 class="font-display font-bold text-xl mb-3">匿名发布</h3>
-                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">无需注册账户即可发布网站。适合临时分享和快速测试。</p>
-                </div>
-                <div class="group p-8 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    </div>
-                    <h3 class="font-display font-bold text-xl mb-3">SSL 自动配置</h3>
-                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">所有网站自动获得 HTTPS 支持，确保您的内容安全传输。</p>
-                </div>
-                <div class="group p-8 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                    </div>
-                    <h3 class="font-display font-bold text-xl mb-3">多文件支持</h3>
-                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">支持 HTML、CSS、JS、图片、PDF、视频等各种静态文件格式。</p>
-                </div>
-                <div class="group p-8 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                    </div>
-                    <h3 class="font-display font-bold text-xl mb-3">自定义域名</h3>
-                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">支持绑定您自己的域名，打造专业品牌形象。</p>
-                </div>
-                <div class="group p-8 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    </div>
-                    <h3 class="font-display font-bold text-xl mb-3">命令行工具</h3>
-                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">通过 CLI 工具自动化部署流程，集成到您的开发工作流。</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Complete Tutorial Section -->
-    <section id="tutorial" class="py-24 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-primary-50/50 to-transparent dark:from-primary-900/20 dark:to-transparent"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-display font-bold text-4xl sm:text-5xl mb-4">完整教程</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-400">从零开始学习 here.now 的完整部署流程</p>
-            </div>
-
-            <!-- Step 1: Prerequisites -->
-            <div class="mb-16">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-display font-bold text-xl">1</div>
-                    <h3 class="font-display font-bold text-2xl">准备工作</h3>
-                </div>
-                <div class="ml-16">
-                    <div class="p-6 rounded-2xl glass">
-                        <h4 class="font-semibold text-lg mb-4">选择发布模式</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div class="p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 border-2 border-transparent hover:border-primary-500/50 transition-colors cursor-pointer" onclick="selectMode('anonymous')">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <input type="radio" name="mode" id="mode-anonymous" class="w-4 h-4 text-primary-600">
-                                    <span class="font-semibold">匿名模式</span>
-                                </div>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 ml-7">无需账户，24小时后自动过期，适合临时测试</p>
-                            </div>
-                            <div class="p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 border-2 border-transparent hover:border-accent-500/50 transition-colors cursor-pointer" onclick="selectMode('authenticated')">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <input type="radio" name="mode" id="mode-authenticated" class="w-4 h-4 text-accent-600" checked>
-                                    <span class="font-semibold">认证模式</span>
-                                </div>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 ml-7">需要 API 密钥，永久存储，适合生产环境</p>
-                            </div>
-                        </div>
-                        
-                        <div id="auth-setup" class="space-y-4">
-                            <h4 class="font-semibold text-lg">获取 API 密钥</h4>
-                            <div class="space-y-3">
-                                <div class="flex items-start gap-3">
-                                    <span class="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">A</span>
-                                    <div>
-                                        <p class="font-medium">方式一：代理辅助获取</p>
-                                        <p class="text-sm text-slate-600 dark:text-slate-400">通过 API 请求验证码并完成验证</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-3">
-                                    <span class="w-6 h-6 rounded-full bg-accent-100 dark:bg-accent-900 text-accent-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">B</span>
-                                    <div>
-                                        <p class="font-medium">方式二：面板获取</p>
-                                        <p class="text-sm text-slate-600 dark:text-slate-400">访问 here.now 面板，登录后复制 API 密钥</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4 p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                                <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                                    <strong>提示：</strong> 将 API 密钥存储在环境变量 <code class="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">HERENOW_API_KEY</code> 或 <code class="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">~/.herenow/credentials</code> 文件中
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 2: Create Site -->
-            <div class="mb-16">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-12 h-12 rounded-full bg-accent-600 text-white flex items-center justify-center font-display font-bold text-xl">2</div>
-                    <h3 class="font-display font-bold text-2xl">创建站点</h3>
-                </div>
-                <div class="ml-16 space-y-6">
-                    <p class="text-slate-600 dark:text-slate-400">调用创建站点 API，上传文件列表和元数据，获取上传 URL。</p>
-                    
-                    <!-- Code Tabs -->
-                    <div class="rounded-2xl overflow-hidden glass">
-                        <div class="flex border-b border-slate-200 dark:border-slate-700">
-                            <button onclick="switchTab('create', 'curl')" id="tab-create-curl" class="tab-btn px-6 py-3 text-sm font-medium tab-active">cURL</button>
-                            <button onclick="switchTab('create', 'js')" id="tab-create-js" class="tab-btn px-6 py-3 text-sm font-medium text-slate-500">JavaScript</button>
-                            <button onclick="switchTab('create', 'python')" id="tab-create-python" class="tab-btn px-6 py-3 text-sm font-medium text-slate-500">Python</button>
-                        </div>
-                        <div class="code-block p-6 overflow-x-auto">
-                            <pre id="code-create-curl" class="text-sm font-mono"><code><span class="text-purple-400">curl</span> <span class="text-green-400">-X POST</span> <span class="text-yellow-400">"https://here.now/api/v1/publish"</span> \\
-  <span class="text-green-400">-H</span> <span class="text-yellow-400">"Content-Type: application/json"</span> \\
-  <span class="text-green-400">-H</span> <span class="text-yellow-400">"Authorization: Bearer YOUR_API_KEY"</span> \\
-  <span class="text-green-400">-d</span> <span class="text-yellow-400">'{
-    "files": [
-      {
-        "path": "index.html",
-        "size": 1234,
-        "contentType": "text/html",
-        "hash": "sha256:abc123..."
-      },
-      {
-        "path": "styles.css",
-        "size": 567,
-        "contentType": "text/css",
-        "hash": "sha256:def456..."
-      }
-    ],
-    "viewer": {
-      "title": "我的网站",
-      "description": "这是一个示例网站",
-      "ogImagePath": "cover.png"
-    }
-  }'</span></code></pre>
-                            <pre id="code-create-js" class="text-sm font-mono hidden"><code><span class="text-slate-400">// 使用 fetch API 创建站点</span>
-<span class="text-purple-400">const</span> <span class="text-blue-400">response</span> <span class="text-slate-300">=</span> <span class="text-purple-400">await</span> <span class="text-blue-400">fetch</span>(<span class="text-yellow-400">'https://here.now/api/v1/publish'</span>, {
-  <span class="text-blue-400">method</span>: <span class="text-yellow-400">'POST'</span>,
-  <span class="text-blue-400">headers</span>: {
-    <span class="text-yellow-400">'Content-Type'</span>: <span class="text-yellow-400">'application/json'</span>,
-    <span class="text-yellow-400">'Authorization'</span>: <span class="text-yellow-400">'Bearer YOUR_API_KEY'</span>
-  },
-  <span class="text-blue-400">body</span>: <span class="text-blue-400">JSON</span>.<span class="text-blue-400">stringify</span>({
-    <span class="text-blue-400">files</span>: [
-      {
-        <span class="text-blue-400">path</span>: <span class="text-yellow-400">'index.html'</span>,
-        <span class="text-blue-400">size</span>: <span class="text-orange-400">1234</span>,
-        <span class="text-blue-400">contentType</span>: <span class="text-yellow-400">'text/html'</span>,
-        <span class="text-blue-400">hash</span>: <span class="text-yellow-400">'sha256:abc123...'</span>
-      }
-    ],
-    <span class="text-blue-400">viewer</span>: {
-      <span class="text-blue-400">title</span>: <span class="text-yellow-400">'我的网站'</span>,
-      <span class="text-blue-400">description</span>: <span class="text-yellow-400">'这是一个示例网站'</span>
-    }
-  })
-});
-
-<span class="text-purple-400">const</span> <span class="text-blue-400">data</span> <span class="text-slate-300">=</span> <span class="text-purple-400">await</span> <span class="text-blue-400">response</span>.<span class="text-blue-400">json</span>();
-<span class="text-blue-400">console</span>.<span class="text-blue-400">log</span>(<span class="text-blue-400">data</span>.<span class="text-blue-400">siteUrl</span>); <span class="text-slate-400">// 站点访问地址</span></code></pre>
-                            <pre id="code-create-python" class="text-sm font-mono hidden"><code><span class="text-purple-400">import</span> <span class="text-blue-400">requests</span>
-<span class="text-purple-400">import</span> <span class="text-blue-400">hashlib</span>
-
-<span class="text-slate-400"># 计算文件 hash</span>
-<span class="text-purple-400">def</span> <span class="text-blue-400">file_hash</span>(filepath):
-    <span class="text-purple-400">with</span> <span class="text-blue-400">open</span>(filepath, <span class="text-yellow-400">'rb'</span>) <span class="text-purple-400">as</span> f:
-        <span class="text-purple-400">return</span> <span class="text-yellow-400">f"sha256:{hashlib.sha256(f.read()).hexdigest()}"</span>
-
-<span class="text-slate-400"># 准备文件列表</span>
-files = [
-    {
-        <span class="text-yellow-400">"path"</span>: <span class="text-yellow-400">"index.html"</span>,
-        <span class="text-yellow-400">"size"</span>: <span class="text-orange-400">1234</span>,
-        <span class="text-yellow-400">"contentType"</span>: <span class="text-yellow-400">"text/html"</span>,
-        <span class="text-yellow-400">"hash"</span>: file_hash(<span class="text-yellow-400">"index.html"</span>)
-    }
-]
-
-<span class="text-slate-400"># 创建站点</span>
-response = requests.post(
-    <span class="text-yellow-400">"https://here.now/api/v1/publish"</span>,
-    headers={
-        <span class="text-yellow-400">"Authorization"</span>: <span class="text-yellow-400">"Bearer YOUR_API_KEY"</span>,
-        <span class="text-yellow-400">"Content-Type"</span>: <span class="text-yellow-400">"application/json"</span>
-    },
-    json={
-        <span class="text-yellow-400">"files"</span>: files,
-        <span class="text-yellow-400">"viewer"</span>: {
-            <span class="text-yellow-400">"title"</span>: <span class="text-yellow-400">"我的网站"</span>,
-            <span class="text-yellow-400">"description"</span>: <span class="text-yellow-400">"这是一个示例网站"</span>
-        }
-    }
-)
-
-data = response.json()
-<span class="text-blue-400">print</span>(<span class="text-yellow-400">f"站点地址: {data['siteUrl']}"</span>)</code></pre>
-                        </div>
-                    </div>
-
-                    <!-- Response Example -->
-                    <div class="p-6 rounded-2xl glass">
-                        <h4 class="font-semibold text-lg mb-4">响应示例</h4>
-                        <div class="code-block rounded-xl p-4 overflow-x-auto">
-                            <pre class="text-sm font-mono"><code><span class="text-yellow-400">{</span>
-  <span class="text-blue-400">"slug"</span><span class="text-slate-300">:</span> <span class="text-green-400">"abc123xyz"</span><span class="text-slate-300">,</span>
-  <span class="text-blue-400">"siteUrl"</span><span class="text-slate-300">:</span> <span class="text-green-400">"https://abc123xyz.here.now"</span><span class="text-slate-300">,</span>
-  <span class="text-blue-400">"claimUrl"</span><span class="text-slate-300">:</span> <span class="text-green-400">"https://here.now/claim/abc123xyz?token=..."</span><span class="text-slate-300">,</span>
-  <span class="text-blue-400">"claimToken"</span><span class="text-slate-300">:</span> <span class="text-green-400">"claim_token_here"</span><span class="text-slate-300">,</span>
-  <span class="text-blue-400">"uploadUrls"</span><span class="text-slate-300">:</span> <span class="text-yellow-400">[</span>
-    <span class="text-yellow-400">{</span>
-      <span class="text-blue-400">"path"</span><span class="text-slate-300">:</span> <span class="text-green-400">"index.html"</span><span class="text-slate-300">,</span>
-      <span class="text-blue-400">"url"</span><span class="text-slate-300">:</span> <span class="text-green-400">"https://storage.here.now/upload/..."</span><span class="text-slate-300">,</span>
-      <span class="text-blue-400">"method"</span><span class="text-slate-300">:</span> <span class="text-green-400">"PUT"</span><span class="text-slate-300">,</span>
-      <span class="text-blue-400">"headers"</span><span class="text-slate-300">:</span> <span class="text-yellow-400">{</span>
-        <span class="text-blue-400">"Content-Type"</span><span class="text-slate-300">:</span> <span class="text-green-400">"text/html"</span>
-      <span class="text-yellow-400">}</span>
-    <span class="text-yellow-400">}</span>
-  <span class="text-yellow-400">]</span><span class="text-slate-300">,</span>
-  <span class="text-blue-400">"finalizeUrl"</span><span class="text-slate-300">:</span> <span class="text-green-400">"https://here.now/api/v1/publish/abc123xyz/finalize"</span>
-<span class="text-yellow-400">}</span></code></pre>
-                        </div>
-                        <div class="mt-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                            <p class="text-sm text-amber-800 dark:text-amber-200">
-                                <strong>重要：</strong> 匿名站点务必保存 <code class="bg-amber-100 dark:bg-amber-900 px-1 rounded">claimToken</code> 和 <code class="bg-amber-100 dark:bg-amber-900 px-1 rounded">claimUrl</code>，这些信息只返回一次！
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: Upload Files -->
-            <div class="mb-16">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-display font-bold text-xl">3</div>
-                    <h3 class="font-display font-bold text-2xl">上传文件</h3>
-                </div>
-                <div class="ml-16 space-y-6">
-                    <p class="text-slate-600 dark:text-slate-400">使用返回的上传 URL，通过 PUT 请求上传文件内容。支持并行上传多个文件。</p>
-                    
-                    <div class="rounded-2xl overflow-hidden glass">
-                        <div class="flex border-b border-slate-200 dark:border-slate-700">
-                            <button onclick="switchTab('upload', 'curl')" id="tab-upload-curl" class="tab-btn px-6 py-3 text-sm font-medium tab-active">cURL</button>
-                            <button onclick="switchTab('upload', 'js')" id="tab-upload-js" class="tab-btn px-6 py-3 text-sm font-medium text-slate-500">JavaScript</button>
-                            <button onclick="switchTab('upload', 'python')" id="tab-upload-python" class="tab-btn px-6 py-3 text-sm font-medium text-slate-500">Python</button>
-                        </div>
-                        <div class="code-block p-6 overflow-x-auto">
-                            <pre id="code-upload-curl" class="text-sm font-mono"><code><span class="text-slate-400"># 上传单个文件</span>
-<span class="text-purple-400">curl</span> <span class="text-green-400">-X PUT</span> <span class="text-yellow-400">"https://storage.here.now/upload/..."</span> \\
-  <span class="text-green-400">-H</span> <span class="text-yellow-400">"Content-Type: text/html"</span> \\
-  <span class="text-green-400">--data-binary</span> @index.html
-
-<span class="text-slate-400"># 并行上传多个文件（使用后台进程）</span>
-<span class="text-purple-400">curl</span> <span class="text-green-400">-X PUT</span> <span class="text-yellow-400">"https://storage.here.now/upload/1..."</span> <span class="text-green-400">--data-binary</span> @index.html &amp;
-<span class="text-purple-400">curl</span> <span class="text-green-400">-X PUT</span> <span class="text-yellow-400">"https://storage.here.now/upload/2..."</span> <span class="text-green-400">--data-binary</span> @styles.css &amp;
-<span class="text-purple-400">wait</span> <span class="text-slate-400"># 等待所有上传完成</span></code></pre>
-                            <pre id="code-upload-js" class="text-sm font-mono hidden"><code><span class="text-slate-400">// 并行上传所有文件</span>
-<span class="text-purple-400">const</span> <span class="text-blue-400">uploadPromises</span> <span class="text-slate-300">=</span> <span class="text-blue-400">uploadUrls</span>.<span class="text-blue-400">map</span>(<span class="text-purple-400">async</span> (<span class="text-blue-400">uploadInfo</span>) <span class="text-purple-400">=></span> {
-  <span class="text-purple-400">const</span> <span class="text-blue-400">fileContent</span> <span class="text-slate-300">=</span> <span class="text-blue-400">fs</span>.<span class="text-blue-400">readFileSync</span>(<span class="text-blue-400">uploadInfo</span>.<span class="text-blue-400">path</span>);
-  
-  <span class="text-purple-400">const</span> <span class="text-blue-400">response</span> <span class="text-slate-300">=</span> <span class="text-purple-400">await</span> <span class="text-blue-400">fetch</span>(<span class="text-blue-400">uploadInfo</span>.<span class="text-blue-400">url</span>, {
-    <span class="text-blue-400">method</span>: <span class="text-yellow-400">'PUT'</span>,
-    <span class="text-blue-400">headers</span>: <span class="text-blue-400">uploadInfo</span>.<span class="text-blue-400">headers</span>,
-    <span class="text-blue-400">body</span>: <span class="text-blue-400">fileContent</span>
-  });
-  
-  <span class="text-purple-400">if</span> (<span class="text-slate-300">!</span><span class="text-blue-400">response</span>.<span class="text-blue-400">ok</span>) {
-    <span class="text-purple-400">throw</span> <span class="text-purple-400">new</span> <span class="text-blue-400">Error</span>(<span class="text-yellow-400">`上传失败: ${uploadInfo.path}`</span>);
-  }
-  
-  <span class="text-purple-400">return</span> <span class="text-blue-400">uploadInfo</span>.<span class="text-blue-400">path</span>;
-});
-
-<span class="text-purple-400">try</span> {
-  <span class="text-purple-400">await</span> <span class="text-blue-400">Promise</span>.<span class="text-blue-400">all</span>(<span class="text-blue-400">uploadPromises</span>);
-  <span class="text-blue-400">console</span>.<span class="text-blue-400">log</span>(<span class="text-yellow-400">'所有文件上传成功!'</span>);
-} <span class="text-purple-400">catch</span> (<span class="text-blue-400">error</span>) {
-  <span class="text-blue-400">console</span>.<span class="text-blue-400">error</span>(<span class="text-yellow-400">'上传失败:'</span>, <span class="text-blue-400">error</span>);
-}</code></pre>
-                            <pre id="code-upload-python" class="text-sm font-mono hidden"><code><span class="text-purple-400">import</span> <span class="text-blue-400">requests</span>
-<span class="text-purple-400">from</span> <span class="text-blue-400">concurrent.futures</span> <span class="text-purple-400">import</span> <span class="text-blue-400">ThreadPoolExecutor</span>
-
-<span class="text-purple-400">def</span> <span class="text-blue-400">upload_file</span>(upload_info):
-    <span class="text-yellow-400">"""上传单个文件"""</span>
-    file_path = upload_info[<span class="text-yellow-400">'path'</span>]
-    upload_url = upload_info[<span class="text-yellow-400">'url'</span>]
-    headers = upload_info[<span class="text-yellow-400">'headers'</span>]
-    
-    <span class="text-purple-400">with</span> <span class="text-blue-400">open</span>(file_path, <span class="text-yellow-400">'rb'</span>) <span class="text-purple-400">as</span> f:
-        response = requests.put(upload_url, data=f, headers=headers)
-    
-    <span class="text-purple-400">if</span> response.status_code == <span class="text-orange-400">200</span>:
-        <span class="text-purple-400">return</span> {<span class="text-yellow-400">"path"</span>: file_path, <span class="text-yellow-400">"status"</span>: <span class="text-yellow-400">"success"</span>}
-    <span class="text-purple-400">else</span>:
-        <span class="text-purple-400">raise</span> <span class="text-blue-400">Exception</span>(<span class="text-yellow-400">f"上传失败 {file_path}: {response.status_code}"</span>)
-
-<span class="text-slate-400"># 并行上传所有文件</span>
-<span class="text-purple-400">with</span> <span class="text-blue-400">ThreadPoolExecutor</span>(max_workers=<span class="text-orange-400">5</span>) <span class="text-purple-400">as</span> executor:
-    results = <span class="text-blue-400">list</span>(executor.<span class="text-blue-400">map</span>(upload_file, upload_urls))
-
-<span class="text-blue-400">print</span>(<span class="text-yellow-400">"所有文件上传完成!"</span>)</code></pre>
-                        </div>
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                        <p class="text-sm text-blue-800 dark:text-blue-200">
-                            <strong>提示：</strong> 使用 <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded">--data-binary</code> (cURL) 或读取文件的二进制模式，确保文件内容不会损坏
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4: Finalize -->
-            <div class="mb-16">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center font-display font-bold text-xl">4</div>
-                    <h3 class="font-display font-bold text-2xl">最终化站点</h3>
-                </div>
-                <div class="ml-16 space-y-6">
-                    <p class="text-slate-600 dark:text-slate-400">所有文件上传完成后，调用最终化接口完成发布。此时站点将正式对外可访问。</p>
-                    
-                    <div class="code-block rounded-xl p-6 overflow-x-auto">
-                        <pre class="text-sm font-mono"><code><span class="text-slate-400"># 最终化站点</span>
-<span class="text-purple-400">curl</span> <span class="text-green-400">-X POST</span> <span class="text-yellow-400">"https://here.now/api/v1/publish/abc123xyz/finalize"</span> \\
-  <span class="text-green-400">-H</span> <span class="text-yellow-400">"Authorization: Bearer YOUR_API_KEY"</span></code></pre>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <p class="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">成功响应 (200)</p>
-                            <code class="text-xs text-green-700 dark:text-green-300">{ "status": "published", "url": "https://abc123xyz.here.now" }</code>
-                        </div>
-                        <div class="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                            <p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">失败响应 (400/401)</p>
-                            <code class="text-xs text-red-700 dark:text-red-300">{ "error": "Not all files uploaded" }</code>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CLI Tool -->
-            <div class="p-8 rounded-2xl glass">
-                <h3 class="font-display font-bold text-2xl mb-6">使用 CLI 工具（推荐）</h3>
-                <p class="text-slate-600 dark:text-slate-400 mb-6">对于频繁部署，推荐使用官方 CLI 工具简化流程。</p>
-                
-                <div class="space-y-4">
-                    <div class="code-block rounded-xl p-4">
-                        <p class="text-slate-400 text-sm mb-2"># 安装 CLI</p>
-                        <code class="text-green-400 font-mono text-sm">npx skills add heredotnow/skill --skill here-now -g</code>
-                    </div>
-                    <div class="code-block rounded-xl p-4">
-                        <p class="text-slate-400 text-sm mb-2"># 在项目目录中部署</p>
-                        <code class="text-blue-400 font-mono text-sm">here-now deploy</code>
-                    </div>
-                    <div class="code-block rounded-xl p-4">
-                        <p class="text-slate-400 text-sm mb-2"># 指定 API 密钥部署</p>
-                        <code class="text-purple-400 font-mono text-sm">here-now deploy --api-key YOUR_API_KEY</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- API Reference Section -->
-    <section id="api" class="py-24 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-display font-bold text-4xl sm:text-5xl mb-4">API 参考</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-400">完整的 RESTful API 接口文档</p>
-            </div>
-
-            <!-- Authentication -->
-            <div class="mb-12">
-                <h3 class="font-display font-bold text-2xl mb-6">认证方式</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="p-6 rounded-2xl glass">
-                        <h4 class="font-semibold text-lg mb-3 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                            匿名模式
-                        </h4>
-                        <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                            <li>• 省略 Authorization 头</li>
-                            <li>• 24小时后自动过期</li>
-                            <li>• 适合临时测试和分享</li>
-                            <li>• 需要保存 claimToken 进行管理</li>
-                        </ul>
-                    </div>
-                    <div class="p-6 rounded-2xl glass ring-2 ring-primary-500/50">
-                        <h4 class="font-semibold text-lg mb-3 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-primary-500"></span>
-                            认证模式
-                        </h4>
-                        <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                            <li>• <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">Authorization: Bearer &lt;API_KEY&gt;</code></li>
-                            <li>• 永久存储（或自定义 TTL）</li>
-                            <li>• 支持所有高级功能</li>
-                            <li>• 更高的使用限制</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Endpoints -->
-            <div class="space-y-6">
-                <!-- POST /api/v1/publish -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 text-sm font-bold">POST</span>
-                        <code class="text-lg font-mono">/api/v1/publish</code>
-                        <span class="text-slate-500 text-sm">创建新站点</span>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <h5 class="font-semibold mb-2">请求参数</h5>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm">
-                                    <thead class="text-left border-b border-slate-200 dark:border-slate-700">
-                                        <tr><th class="pb-2 font-medium">字段</th><th class="pb-2 font-medium">类型</th><th class="pb-2 font-medium">必需</th><th class="pb-2 font-medium">说明</th></tr>
-                                    </thead>
-                                    <tbody class="text-slate-600 dark:text-slate-400">
-                                        <tr><td class="py-2 font-mono text-primary-600">files</td><td>array</td><td>是</td><td>文件列表，包含 path, size, contentType, hash</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">files[].path</td><td>string</td><td>是</td><td>文件路径（相对路径）</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">files[].size</td><td>number</td><td>是</td><td>文件大小（字节）</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">files[].contentType</td><td>string</td><td>是</td><td>MIME 类型</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">files[].hash</td><td>string</td><td>否</td><td>SHA-256 哈希，用于增量部署</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">ttlSeconds</td><td>number</td><td>否</td><td>过期时间（秒），null 表示永久</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">viewer</td><td>object</td><td>否</td><td>站点元信息</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">viewer.title</td><td>string</td><td>否</td><td>站点标题</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">viewer.description</td><td>string</td><td>否</td><td>站点描述</td></tr>
-                                        <tr><td class="py-2 font-mono text-primary-600">viewer.ogImagePath</td><td>string</td><td>否</td><td>社交分享图片路径</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PUT /api/v1/publish/:slug -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-bold">PUT</span>
-                        <code class="text-lg font-mono">/api/v1/publish/:slug</code>
-                        <span class="text-slate-500 text-sm">更新站点（增量部署）</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">通过文件 hash 比较，只上传发生变化的文件。匿名站点需要提供 claimToken。</p>
-                    <div class="code-block rounded-lg p-4 overflow-x-auto">
-                        <pre class="text-sm font-mono"><code><span class="text-slate-400">// 请求头（匿名站点）</span>
-<span class="text-blue-400">X-HereNow-Claim-Token</span><span class="text-slate-300">:</span> <span class="text-green-400">your_claim_token</span></code></pre>
-                    </div>
-                </div>
-
-                <!-- POST /api/v1/publish/:slug/finalize -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400 text-sm font-bold">POST</span>
-                        <code class="text-lg font-mono">/api/v1/publish/:slug/finalize</code>
-                        <span class="text-slate-500 text-sm">最终化站点</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">确认所有文件上传完成，使站点正式对外可访问。</p>
-                </div>
-
-                <!-- POST /api/v1/publish/:slug/claim -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-600 dark:text-orange-400 text-sm font-bold">POST</span>
-                        <code class="text-lg font-mono">/api/v1/publish/:slug/claim</code>
-                        <span class="text-slate-500 text-sm">认领站点</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">将匿名站点关联到您的账户，转换为永久存储。</p>
-                </div>
-
-                <!-- PATCH /api/v1/publish/:slug/metadata -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm font-bold">PATCH</span>
-                        <code class="text-lg font-mono">/api/v1/publish/:slug/metadata</code>
-                        <span class="text-slate-500 text-sm">更新元数据</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">更新站点标题、描述、密码保护等元信息。</p>
-                    <div class="code-block rounded-lg p-4 overflow-x-auto">
-                        <pre class="text-sm font-mono"><code><span class="text-yellow-400">{</span>
-  <span class="text-blue-400">"password"</span><span class="text-slate-300">:</span> <span class="text-green-400">"your-password"</span><span class="text-slate-300">,</span>  <span class="text-slate-400">// 设置密码保护</span>
-  <span class="text-blue-400">"viewer"</span><span class="text-slate-300">:</span> <span class="text-yellow-400">{</span>
-    <span class="text-blue-400">"title"</span><span class="text-slate-300">:</span> <span class="text-green-400">"新标题"</span><span class="text-slate-300">,</span>
-    <span class="text-blue-400">"description"</span><span class="text-slate-300">:</span> <span class="text-green-400">"新描述"</span>
-  <span class="text-yellow-400">}</span>
-<span class="text-yellow-400">}</span></code></pre>
-                    </div>
-                </div>
-
-                <!-- DELETE /api/v1/publish/:slug -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-600 dark:text-red-400 text-sm font-bold">DELETE</span>
-                        <code class="text-lg font-mono">/api/v1/publish/:slug</code>
-                        <span class="text-slate-500 text-sm">删除站点</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">永久删除站点及其所有文件。此操作不可恢复。</p>
-                </div>
-
-                <!-- GET /api/v1/publishes -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-slate-500/20 text-slate-600 dark:text-slate-400 text-sm font-bold">GET</span>
-                        <code class="text-lg font-mono">/api/v1/publishes</code>
-                        <span class="text-slate-500 text-sm">获取站点列表</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">获取您账户下的所有站点列表。</p>
-                </div>
-
-                <!-- POST /api/v1/publish/:slug/duplicate -->
-                <div class="endpoint-card p-6 rounded-2xl glass">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-600 dark:text-pink-400 text-sm font-bold">POST</span>
-                        <code class="text-lg font-mono">/api/v1/publish/:slug/duplicate</code>
-                        <span class="text-slate-500 text-sm">复制站点</span>
-                    </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">创建站点的副本，包括所有文件和元数据。</p>
-                </div>
-            </div>
-
-            <!-- Error Codes -->
-            <div class="mt-12 p-6 rounded-2xl glass">
-                <h3 class="font-display font-bold text-xl mb-6">错误代码</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <span class="px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 text-xs font-bold">400</span>
-                        <div>
-                            <p class="font-medium text-sm">Bad Request</p>
-                            <p class="text-xs text-slate-500">请求参数错误</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <span class="px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 text-xs font-bold">401</span>
-                        <div>
-                            <p class="font-medium text-sm">Unauthorized</p>
-                            <p class="text-xs text-slate-500">API 密钥无效或缺失</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <span class="px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 text-xs font-bold">403</span>
-                        <div>
-                            <p class="font-medium text-sm">Forbidden</span>
-                            <p class="text-xs text-slate-500">没有权限执行此操作</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <span class="px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 text-xs font-bold">404</span>
-                        <div>
-                            <p class="font-medium text-sm">Not Found</p>
-                            <p class="text-xs text-slate-500">站点不存在</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <span class="px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 text-xs font-bold">409</span>
-                        <div>
-                            <p class="font-medium text-sm">Conflict</p>
-                            <p class="text-xs text-slate-500">站点 slug 已存在</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <span class="px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 text-xs font-bold">429</span>
-                        <div>
-                            <p class="font-medium text-sm">Too Many Requests</p>
-                            <p class="text-xs text-slate-500">超出速率限制</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Examples Section -->
-    <section id="examples" class="py-24 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-accent-50/30 to-transparent dark:from-accent-900/10 dark:to-transparent"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-display font-bold text-4xl sm:text-5xl mb-4">完整示例</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-400">真实场景的使用示例</p>
-            </div>
-
-            <!-- Example 1: Single Page -->
-            <div class="mb-12 p-8 rounded-2xl glass">
-                <h3 class="font-display font-bold text-xl mb-4">示例 1：部署单页应用</h3>
-                <div class="code-block rounded-xl p-6 overflow-x-auto">
-                    <pre class="text-sm font-mono"><code><span class="text-slate-400">#!/bin/bash</span>
-<span class="text-slate-400"># deploy.sh - 单页应用部署脚本</span>
-
-<span class="text-blue-400">API_KEY</span>=<span class="text-yellow-400">"your_api_key"</span>
-<span class="text-blue-400">DIST_DIR</span>=<span class="text-yellow-400">"./dist"</span>
-
-<span class="text-slate-400"># 1. 准备文件列表</span>
-<span class="text-blue-400">files_json</span>=<span class="text-yellow-400">"["</span>
-<span class="text-purple-400">for</span> <span class="text-blue-400">file</span> <span class="text-purple-400">in</span> <span class="text-blue-400">$DIST_DIR</span>/*; <span class="text-purple-400">do</span>
-  <span class="text-blue-400">filename</span>=<span class="text-green-400">$(basename "$file")</span>
-  <span class="text-blue-400">size</span>=<span class="text-green-400">$(stat -f%z "$file")</span>
-  <span class="text-blue-400">mime</span>=<span class="text-green-400">$(file -b --mime-type "$file")</span>
-  <span class="text-blue-400">files_json</span>+=<span class="text-yellow-400">"{\"path\":\"$filename\",\"size\":$size,\"contentType\":\"$mime\"},"</span>
-<span class="text-purple-400">done</span>
-<span class="text-blue-400">files_json</span>=<span class="text-green-400">"${files_json%,}]"</span>
-
-<span class="text-slate-400"># 2. 创建站点</span>
-<span class="text-blue-400">response</span>=<span class="text-green-400">$(curl -s -X POST "https://here.now/api/v1/publish" \</span>
-  <span class="text-green-400">-H "Authorization: Bearer $API_KEY" \</span>
-  <span class="text-green-400">-H "Content-Type: application/json" \</span>
-  <span class="text-green-400">-d "{\"files\":$files_json}")</span>
-
-<span class="text-blue-400">site_url</span>=<span class="text-green-400">$(echo "$response" | jq -r '.siteUrl')</span>
-<span class="text-blue-400">finalize_url</span>=<span class="text-green-400">$(echo "$response" | jq -r '.finalizeUrl')</span>
-
-<span class="text-slate-400"># 3. 上传文件</span>
-<span class="text-green-400">echo "$response"</span> | <span class="text-blue-400">jq</span> -r <span class="text-yellow-400">'.uploadUrls[] | "\(.path)\t\(.url)\t\(.headers | tojson)"'</span> | \
-<span class="text-purple-400">while</span> <span class="text-blue-400">IFS</span>=<span class="text-yellow-400">$'\t'</span> <span class="text-blue-400">read</span> -r <span class="text-blue-400">path url headers</span>; <span class="text-purple-400">do</span>
-  <span class="text-blue-400">content_type</span>=<span class="text-green-400">$(echo "$headers" | jq -r '.["Content-Type"]')</span>
-  <span class="text-blue-400">curl</span> -s -X <span class="text-blue-400">PUT</span> <span class="text-yellow-400">"$url"</span> -H <span class="text-yellow-400">"Content-Type: $content_type"</span> --data-binary <span class="text-yellow-400">"@$DIST_DIR/$path"</span>
-  <span class="text-blue-400">echo</span> <span class="text-yellow-400">"上传完成: $path"</span>
-<span class="text-purple-400">done</span>
-
-<span class="text-slate-400"># 4. 最终化</span>
-<span class="text-blue-400">curl</span> -s -X <span class="text-blue-400">POST</span> <span class="text-yellow-400">"$finalize_url"</span> -H <span class="text-yellow-400">"Authorization: Bearer $API_KEY"</span>
-
-<span class="text-blue-400">echo</span> <span class="text-yellow-400">"部署成功: $site_url"</span></code></pre>
-                </div>
-            </div>
-
-            <!-- Example 2: GitHub Actions -->
-            <div class="mb-12 p-8 rounded-2xl glass">
-                <h3 class="font-display font-bold text-xl mb-4">示例 2：GitHub Actions 自动部署</h3>
-                <div class="code-block rounded-xl p-6 overflow-x-auto">
-                    <pre class="text-sm font-mono"><code><span class="text-slate-400"># .github/workflows/deploy.yml</span>
-<span class="text-blue-400">name</span><span class="text-slate-300">:</span> <span class="text-yellow-400">Deploy to here.now</span>
-
-<span class="text-blue-400">on</span><span class="text-slate-300">:</span>
-  <span class="text-blue-400">push</span><span class="text-slate-300">:</span>
-    <span class="text-blue-400">branches</span><span class="text-slate-300">:</span> [<span class="text-yellow-400">main</span>]
-
-<span class="text-blue-400">jobs</span><span class="text-slate-300">:</span>
-  <span class="text-blue-400">deploy</span><span class="text-slate-300">:</span>
-    <span class="text-blue-400">runs-on</span><span class="text-slate-300">:</span> <span class="text-yellow-400">ubuntu-latest</span>
-    <span class="text-blue-400">steps</span><span class="text-slate-300">:</span>
-      - <span class="text-blue-400">uses</span><span class="text-slate-300">:</span> <span class="text-yellow-400">actions/checkout@v3</span>
-      
-      - <span class="text-blue-400">name</span><span class="text-slate-300">:</span> <span class="text-yellow-400">Setup Node.js</span>
-        <span class="text-blue-400">uses</span><span class="text-slate-300">:</span> <span class="text-yellow-400">actions/setup-node@v3</span>
-        <span class="text-blue-400">with</span><span class="text-slate-300">:</span>
-          <span class="text-blue-400">node-version</span><span class="text-slate-300">:</span> <span class="text-yellow-400">'18'</span>
-      
-      - <span class="text-blue-400">name</span><span class="text-slate-300">:</span> <span class="text-yellow-400">Build</span>
-        <span class="text-blue-400">run</span><span class="text-slate-300">:</span> <span class="text-yellow-400">|</span>
-          npm ci
-          npm run build
-      
-      - <span class="text-blue-400">name</span><span class="text-slate-300">:</span> <span class="text-yellow-400">Deploy to here.now</span>
-        <span class="text-blue-400">run</span><span class="text-slate-300">:</span> <span class="text-yellow-400">|</span>
-          npx here-now deploy --api-key ${{ secrets.HERENOW_API_KEY }}</code></pre>
-                </div>
-            </div>
-
-            <!-- Example 3: Incremental Deploy -->
-            <div class="p-8 rounded-2xl glass">
-                <h3 class="font-display font-bold text-xl mb-4">示例 3：增量部署（更新现有站点）</h3>
-                <div class="code-block rounded-xl p-6 overflow-x-auto">
-                    <pre class="text-sm font-mono"><code><span class="text-purple-400">const</span> <span class="text-blue-400">crypto</span> <span class="text-slate-300">=</span> <span class="text-blue-400">require</span>(<span class="text-yellow-400">'crypto'</span>);
-<span class="text-purple-400">const</span> <span class="text-blue-400">fs</span> <span class="text-slate-300">=</span> <span class="text-blue-400">require</span>(<span class="text-yellow-400">'fs'</span>);
-
-<span class="text-slate-400">// 计算文件 hash</span>
-<span class="text-purple-400">function</span> <span class="text-blue-400">getFileHash</span>(filepath) {
-  <span class="text-purple-400">const</span> <span class="text-blue-400">content</span> <span class="text-slate-300">=</span> <span class="text-blue-400">fs</span>.<span class="text-blue-400">readFileSync</span>(filepath);
-  <span class="text-purple-400">return</span> <span class="text-yellow-400">'sha256:'</span> <span class="text-slate-300">+</span> <span class="text-blue-400">crypto</span>.<span class="text-blue-400">createHash</span>(<span class="text-yellow-400">'sha256'</span>).<span class="text-blue-400">update</span>(content).<span class="text-blue-400">digest</span>(<span class="text-yellow-400">'hex'</span>);
+/* Animated mesh background */
+.hero-bg {
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(99,210,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(255,159,67,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99,210,255,0.04) 0%, transparent 50%);
+  animation: meshDrift 20s ease-in-out infinite alternate;
+}
+@keyframes meshDrift {
+  0% { transform: scale(1) translate(0,0); }
+  100% { transform: scale(1.1) translate(-2%,3%); }
 }
 
-<span class="text-slate-400">// 增量部署：只上传修改过的文件</span>
-<span class="text-purple-400">async function</span> <span class="text-blue-400">incrementalDeploy</span>(slug, files) {
-  <span class="text-slate-400">// 准备带 hash 的文件列表</span>
-  <span class="text-purple-400">const</span> <span class="text-blue-400">filesWithHash</span> <span class="text-slate-300">=</span> <span class="text-blue-400">files</span>.<span class="text-blue-400">map</span>(<span class="text-blue-400">file</span> <span class="text-purple-400">=></span> ({
-    ...<span class="text-blue-400">file</span>,
-    hash: <span class="text-blue-400">getFileHash</span>(<span class="text-blue-400">file</span>.<span class="text-blue-400">path</span>)
-  }));
-  
-  <span class="text-slate-400">// 调用更新 API，服务端会比较 hash</span>
-  <span class="text-purple-400">const</span> <span class="text-blue-400">response</span> <span class="text-slate-300">=</span> <span class="text-purple-400">await</span> <span class="text-blue-400">fetch</span>(<span class="text-yellow-400">`https://here.now/api/v1/publish/${slug}`</span>, {
-    <span class="text-blue-400">method</span>: <span class="text-yellow-400">'PUT'</span>,
-    <span class="text-blue-400">headers</span>: {
-      <span class="text-yellow-400">'Authorization'</span>: <span class="text-yellow-400">'Bearer YOUR_API_KEY'</span>,
-      <span class="text-yellow-400">'Content-Type'</span>: <span class="text-yellow-400">'application/json'</span>
-    },
-    <span class="text-blue-400">body</span>: <span class="text-blue-400">JSON</span>.<span class="text-blue-400">stringify</span>({ <span class="text-blue-400">files</span>: <span class="text-blue-400">filesWithHash</span> })
+/* Glow line */
+.glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.3;
+}
+
+/* Code blocks */
+pre {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #c4c8d8;
+  position: relative;
+}
+pre::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+}
+code {
+  font-family: 'JetBrains Mono', monospace;
+}
+:not(pre) > code {
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 0.15em 0.45em;
+  border-radius: 5px;
+  font-size: 0.88em;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+.card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 30px rgba(99,210,255,0.05);
+  transform: translateY(-2px);
+}
+
+/* Nav */
+.nav-link {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: block;
+  text-decoration: none;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Headings */
+.section-title {
+  font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Table */
+.api-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.88rem;
+}
+.api-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+.api-table th:first-child { border-radius: 10px 0 0 0; }
+.api-table th:last-child { border-radius: 0 10px 0 0; }
+.api-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.api-table tr:last-child td { border-bottom: none; }
+.api-table tr:last-child td:first-child { border-radius: 0 0 0 10px; }
+.api-table tr:last-child td:last-child { border-radius: 0 0 10px 0; }
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.2em 0.65em;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+.badge-get { background: rgba(74,222,128,0.12); color: #4ade80; }
+.badge-post { background: rgba(99,210,255,0.12); color: #63d2ff; }
+.badge-put { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.badge-patch { background: rgba(192,132,252,0.12); color: #c084fc; }
+.badge-delete { background: rgba(248,113,113,0.12); color: #f87171; }
+
+/* Step number */
+.step-num {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* Sidebar */
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+
+/* Mobile menu */
+.mobile-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.mobile-overlay.open { opacity: 1; pointer-events: auto; }
+.mobile-sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 280px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-subtle);
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 0.3s;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+.mobile-sidebar.open { transform: translateX(0); }
+
+/* Fade in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.6s ease forwards; }
+.fade-up-d1 { animation-delay: 0.1s; opacity: 0; }
+.fade-up-d2 { animation-delay: 0.2s; opacity: 0; }
+.fade-up-d3 { animation-delay: 0.3s; opacity: 0; }
+
+/* Tip/Warning boxes */
+.callout {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.callout-info {
+  background: rgba(99,210,255,0.06);
+  border-left: 3px solid var(--accent);
+}
+.callout-warn {
+  background: rgba(251,191,36,0.06);
+  border-left: 3px solid var(--warning);
+}
+
+/* Anchor offset */
+[id] { scroll-margin-top: 5rem; }
+
+@media (max-width: 1024px) {
+  .desktop-sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<header style="position:sticky;top:0;z-index:30;background:rgba(10,10,15,0.85);backdrop-filter:blur(16px) saturate(1.5);border-bottom:1px solid var(--border-subtle)">
+  <div style="max-width:1280px;margin:0 auto;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:0.75rem">
+      <button id="menuBtn" style="display:none;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px" onclick="toggleMobile()">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
+      </button>
+      <a href="#" style="text-decoration:none;display:flex;align-items:center;gap:0.5rem">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:var(--accent)">here</span><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:var(--text-primary)">.now</span>
+        <span style="font-size:0.72rem;color:var(--text-muted);padding:0.15em 0.5em;border:1px solid var(--border-subtle);border-radius:5px;margin-left:0.25rem">中文教程</span>
+      </a>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <a href="https://here.now" target="_blank" style="font-size:0.82rem;color:var(--text-secondary);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">官方网站 ↗</a>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile overlay & sidebar -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobile()"></div>
+<nav class="mobile-sidebar" id="mobileSidebar"></nav>
+
+<div style="max-width:1280px;margin:0 auto;display:flex;min-height:calc(100vh - 56px)">
+
+<!-- Desktop sidebar -->
+<aside class="desktop-sidebar sidebar" style="width:240px;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:1.5rem 1rem;border-right:1px solid var(--border-subtle)">
+  <nav id="sidebarNav">
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:0 0.85rem;margin-bottom:0.5rem">入门</div>
+      <a href="#overview" class="nav-link">概述</a>
+      <a href="#install" class="nav-link">安装</a>
+      <a href="#quickstart" class="nav-link">快速开始</a>
+      <a href="#auth" class="nav-link">认证</a>
+      <a href="#apikey" class="nav-link">获取 API 密钥</a>
+      <a href="#storekey" class="nav-link">存储 API 密钥</a>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:0 0.85rem;margin-bottom:0.5rem">API 参考</div>
+      <a href="#api-create" class="nav-link">创建站点</a>
+      <a href="#api-upload" class="nav-link">上传文件</a>
+      <a href="#api-finalize" class="nav-link">完成发布</a>
+      <a href="#api-update" class="nav-link">更新站点</a>
+      <a href="#api-claim" class="nav-link">认领站点</a>
+      <a href="#api-password" class="nav-link">密码保护</a>
+      <a href="#api-duplicate" class="nav-link">复制站点</a>
+      <a href="#api-metadata" class="nav-link">更新元数据</a>
+      <a href="#api-delete" class="nav-link">删除站点</a>
+      <a href="#api-list" class="nav-link">列出站点</a>
+      <a href="#api-detail" class="nav-link">站点详情</a>
+      <a href="#api-refresh" class="nav-link">刷新上传 URL</a>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:0 0.85rem;margin-bottom:0.5rem">高级功能</div>
+      <a href="#handle" class="nav-link">Handle</a>
+      <a href="#custom-domain" class="nav-link">自定义域名</a>
+      <a href="#links" class="nav-link">链接</a>
+      <a href="#serving" class="nav-link">服务规则</a>
+      <a href="#limits" class="nav-link">限制</a>
+    </div>
+  </nav>
+</aside>
+
+<!-- Main content -->
+<main style="flex:1;min-width:0;padding:2rem 2.5rem 4rem">
+
+  <!-- Hero -->
+  <section class="hero-bg" style="border-radius:18px;padding:3rem 2.5rem;margin-bottom:3rem;border:1px solid var(--border-subtle);position:relative">
+    <div style="position:relative;z-index:1">
+      <div class="fade-up" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+        <span style="font-size:0.75rem;color:var(--accent);background:var(--accent-dim);padding:0.25em 0.7em;border-radius:6px;font-weight:500">免费托管</span>
+        <span style="font-size:0.75rem;color:var(--text-muted)">专为 Agent 设计</span>
+      </div>
+      <h1 class="section-title fade-up fade-up-d1" style="font-size:2.5rem;margin:0 0 0.75rem;line-height:1.2">
+        <span style="color:var(--accent)">here</span><span style="color:var(--text-primary)">.now</span>
+        <span style="color:var(--text-secondary);font-weight:400;font-size:1.5rem;margin-left:0.5rem">中文教程</span>
+      </h1>
+      <p class="fade-up fade-up-d2" style="color:var(--text-secondary);font-size:1.05rem;max-width:560px;margin:0 0 1.5rem">
+        即时发布任何文件或文件夹，获得 live URL。<br>三步发布，无需账户，24 小时后自动过期。
+      </p>
+      <div class="fade-up fade-up-d3" style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <a href="#quickstart" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--accent);color:#0a0a0f;padding:0.6rem 1.3rem;border-radius:10px;text-decoration:none;font-weight:600;font-size:0.88rem;transition:opacity 0.2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">快速开始 →</a>
+        <a href="#api-create" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--bg-elevated);color:var(--text-primary);padding:0.6rem 1.3rem;border-radius:10px;text-decoration:none;font-weight:500;font-size:0.88rem;border:1px solid var(--border-subtle);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--border-glow)'" onmouseout="this.style.borderColor='var(--border-subtle)'">API 文档</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overview -->
+  <section id="overview" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem;color:var(--text-primary)">概述</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);margin:0 0 1.5rem">here.now 是免费的即时 Web 托管服务，专为 Agent 设计。发布任何文件或文件夹，获得 live URL：<code>&lt;slug&gt;.here.now</code></p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+      <div class="card" style="padding:1.25rem">
+        <div style="font-size:1.25rem;margin-bottom:0.5rem">📄</div>
+        <div style="font-weight:600;font-size:0.92rem;margin-bottom:0.3rem">仅静态托管</div>
+        <div style="color:var(--text-secondary);font-size:0.82rem">HTML、CSS、JS、图片、PDF、视频等</div>
+      </div>
+      <div class="card" style="padding:1.25rem">
+        <div style="font-size:1.25rem;margin-bottom:0.5rem">🔓</div>
+        <div style="font-weight:600;font-size:0.92rem;margin-bottom:0.3rem">无需账户</div>
+        <div style="color:var(--text-secondary);font-size:0.82rem">匿名站点，24 小时过期</div>
+      </div>
+      <div class="card" style="padding:1.25rem">
+        <div style="font-size:1.25rem;margin-bottom:0.5rem">🔑</div>
+        <div style="font-weight:600;font-size:0.92rem;margin-bottom:0.3rem">API 密钥</div>
+        <div style="color:var(--text-secondary);font-size:0.82rem">永久站点和更高限额</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section id="install" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">安装</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);margin:0 0 1rem">安装 here.now skill，让 Agent 自动发布：</p>
+    <pre><span style="color:var(--accent)">$</span> npx skills add heredotnow/skill --skill here-now -g</pre>
+    <p style="color:var(--text-secondary);margin:1rem 0;font-size:0.88rem">对于项目本地安装，运行时不加 <code>-g</code>。</p>
+    <p style="color:var(--text-secondary);margin:0 0 0.75rem;font-size:0.88rem">如果失败，使用备用安装器：</p>
+    <pre><span style="color:var(--accent)">$</span> curl -fsSL https://here.now/install.sh | bash</pre>
+  </section>
+
+  <!-- Quick Start -->
+  <section id="quickstart" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">快速开始</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);margin:0 0 1.5rem">三步发布站点，无需账户：</p>
+
+    <div style="display:flex;flex-direction:column;gap:1.5rem">
+      <!-- Step 1 -->
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+          <div class="step-num">1</div>
+          <h3 style="margin:0;font-size:1.05rem;font-weight:600">创建站点</h3>
+        </div>
+        <pre><span style="color:var(--accent)">$</span> curl -sS https://here.now/api/v1/publish \
+  -H <span style="color:#fbbf24">"X-HereNow-Client: cursor/direct-api"</span> \
+  -H <span style="color:#fbbf24">"content-type: application/json"</span> \
+  -d <span style="color:#4ade80">'{
+    "files": [
+      { "path": "index.html", "size": 1234, "contentType": "text/html; charset=utf-8" }
+    ]
+  }'</span></pre>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+          <div class="step-num">2</div>
+          <h3 style="margin:0;font-size:1.05rem;font-weight:600">上传文件</h3>
+        </div>
+        <pre><span style="color:var(--accent)">$</span> curl -X PUT <span style="color:#fbbf24">"&lt;upload.uploads[0].url&gt;"</span> \
+  -H <span style="color:#fbbf24">"Content-Type: text/html; charset=utf-8"</span> \
+  --data-binary @index.html</pre>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+          <div class="step-num">3</div>
+          <h3 style="margin:0;font-size:1.05rem;font-weight:600">完成发布</h3>
+        </div>
+        <pre><span style="color:var(--accent)">$</span> curl -sS -X POST <span style="color:#fbbf24">"&lt;finalizeUrl&gt;"</span> \
+  -H <span style="color:#fbbf24">"content-type: application/json"</span> \
+  -d <span style="color:#4ade80">'{ "versionId": "&lt;versionId&gt;" }'</span></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top:1.25rem">
+      <strong>提示：</strong>步骤 1 的响应包含 live <code>siteUrl</code>、预签名上传 URL 和 <code>finalizeUrl</code>。匿名站点 24 小时过期，包含 <code>claimUrl</code> 以便永久保留站点。
+    </div>
+  </section>
+
+  <!-- Auth -->
+  <section id="auth" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">认证</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
+      <div class="card" style="padding:1.5rem">
+        <div style="color:var(--accent);font-weight:600;font-size:0.92rem;margin-bottom:0.5rem">Authenticated 认证模式</div>
+        <p style="color:var(--text-secondary);font-size:0.88rem;margin:0">包含 <code>Authorization: Bearer &lt;API_KEY&gt;</code>，站点永久保留，更高限额。</p>
+      </div>
+      <div class="card" style="padding:1.5rem">
+        <div style="color:var(--accent-warm);font-weight:600;font-size:0.92rem;margin-bottom:0.5rem">Anonymous 匿名模式</div>
+        <p style="color:var(--text-secondary);font-size:0.88rem;margin:0">省略 header，站点 24 小时过期，限额较低。</p>
+      </div>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:1rem">
+      <strong>可选归属：</strong>包含 <code>X-HereNow-Client: &lt;agent&gt;/&lt;tool&gt;</code>，以便 here.now 按客户端调试可靠性。
+    </p>
+  </section>
+
+  <!-- Get API Key -->
+  <section id="apikey" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">获取 API 密钥</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+
+    <h3 style="font-size:1.05rem;font-weight:600;margin:0 0 0.75rem;color:var(--text-primary)">方式 A：Agent 辅助注册</h3>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 0.75rem">通过邮箱请求一次性代码：</p>
+    <pre><span style="color:var(--accent)">$</span> curl -sS https://here.now/api/auth/agent/request-code \
+  -H <span style="color:#fbbf24">"content-type: application/json"</span> \
+  -d <span style="color:#4ade80">'{"email": "user@example.com"}'</span></pre>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:1rem 0 0.75rem">验证代码以获取 API 密钥：</p>
+    <pre><span style="color:var(--accent)">$</span> curl -sS https://here.now/api/auth/agent/verify-code \
+  -H <span style="color:#fbbf24">"content-type: application/json"</span> \
+  -d <span style="color:#4ade80">'{"email":"user@example.com","code":"ABCD-2345"}'</span></pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">如果是新邮箱，账户会自动创建。</p>
+
+    <h3 style="font-size:1.05rem;font-weight:600;margin:1.5rem 0 0.75rem;color:var(--text-primary)">方式 B：Dashboard 注册</h3>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0">在 <a href="https://here.now" style="color:var(--accent);text-decoration:none">here.now</a> 登录，从 dashboard 复制 API 密钥。</p>
+  </section>
+
+  <!-- Store key -->
+  <section id="storekey" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">存储 API 密钥</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">保存到凭证文件：</p>
+    <pre><span style="color:var(--accent)">$</span> mkdir -p ~/.herenow && echo <span style="color:#fbbf24">"&lt;API_KEY&gt;"</span> > ~/.herenow/credentials && chmod 600 ~/.herenow/credentials</pre>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:1rem 0 0.75rem">读取优先级（首次匹配获胜）：</p>
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--bg-card);border-radius:8px;border:1px solid var(--border-subtle)">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:500">1</span>
+        <span style="color:var(--text-secondary);font-size:0.85rem"><code>--api-key</code> 标志（仅 CI/脚本）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--bg-card);border-radius:8px;border:1px solid var(--border-subtle)">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:500">2</span>
+        <span style="color:var(--text-secondary);font-size:0.85rem"><code>$HERENOW_API_KEY</code> 环境变量</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--bg-card);border-radius:8px;border:1px solid var(--border-subtle)">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:500">3</span>
+        <span style="color:var(--text-secondary);font-size:0.85rem"><code>~/.herenow/credentials</code> 文件（推荐）</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- API: Create -->
+  <section id="api-create" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">创建站点</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-post">POST</span>
+      <code style="font-size:0.85rem">/api/v1/publish</code>
+      <span style="color:var(--text-muted);font-size:0.78rem;margin-left:0.5rem">别名：/api/v1/artifact</span>
+    </div>
+
+    <h4 style="font-size:0.92rem;font-weight:600;margin:1.25rem 0 0.5rem;color:var(--text-primary)">请求体</h4>
+    <pre>{
+  <span style="color:var(--accent)">"files"</span>: [
+    { <span style="color:var(--accent)">"path"</span>: <span style="color:#4ade80">"index.html"</span>, <span style="color:var(--accent)">"size"</span>: 1234, <span style="color:var(--accent)">"contentType"</span>: <span style="color:#4ade80">"text/html; charset=utf-8"</span>, <span style="color:var(--accent)">"hash"</span>: <span style="color:#4ade80">"a1b2c3d4..."</span> }
+  ],
+  <span style="color:var(--accent)">"ttlSeconds"</span>: null,
+  <span style="color:var(--accent)">"viewer"</span>: {
+    <span style="color:var(--accent)">"title"</span>: <span style="color:#4ade80">"My site"</span>,
+    <span style="color:var(--accent)">"description"</span>: <span style="color:#4ade80">"Published by an agent"</span>,
+    <span style="color:var(--accent)">"ogImagePath"</span>: <span style="color:#4ade80">"assets/cover.png"</span>
+  }
+}</pre>
+
+    <h4 style="font-size:0.92rem;font-weight:600;margin:1.25rem 0 0.5rem;color:var(--text-primary)">参数说明</h4>
+    <div style="overflow-x:auto">
+      <table class="api-table">
+        <thead><tr><th>参数</th><th>必需</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>files</code></td><td>✅</td><td><code>{ path, size, contentType, hash }</code> 数组。路径相对于站点根目录。</td></tr>
+          <tr><td><code>hash</code></td><td>—</td><td>SHA-256 hex 摘要。更新时匹配的文件跳过上传。</td></tr>
+          <tr><td><code>ttlSeconds</code></td><td>—</td><td>过期时间（秒）。匿名站点忽略。</td></tr>
+          <tr><td><code>viewer</code></td><td>—</td><td>自动 viewer 页面的元数据（仅无 index.html 时适用）。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="font-size:0.92rem;font-weight:600;margin:1.5rem 0 0.5rem;color:var(--text-primary)">认证用户响应</h4>
+    <pre>{
+  <span style="color:var(--accent)">"slug"</span>: <span style="color:#4ade80">"bright-canvas-a7k2"</span>,
+  <span style="color:var(--accent)">"siteUrl"</span>: <span style="color:#4ade80">"https://bright-canvas-a7k2.here.now/"</span>,
+  <span style="color:var(--accent)">"upload"</span>: {
+    <span style="color:var(--accent)">"versionId"</span>: <span style="color:#4ade80">"01J..."</span>,
+    <span style="color:var(--accent)">"uploads"</span>: [
+      { <span style="color:var(--accent)">"path"</span>: <span style="color:#4ade80">"index.html"</span>, <span style="color:var(--accent)">"method"</span>: <span style="color:#4ade80">"PUT"</span>, <span style="color:var(--accent)">"url"</span>: <span style="color:#4ade80">"https://&lt;presigned-url&gt;"</span> }
+    ],
+    <span style="color:var(--accent)">"skipped"</span>: [<span style="color:#4ade80">"assets/app.js"</span>],
+    <span style="color:var(--accent)">"finalizeUrl"</span>: <span style="color:#4ade80">"https://here.now/api/v1/publish/bright-canvas-a7k2/finalize"</span>,
+    <span style="color:var(--accent)">"expiresInSeconds"</span>: 3600
+  }
+}</pre>
+
+    <h4 style="font-size:0.92rem;font-weight:600;margin:1.5rem 0 0.5rem;color:var(--text-primary)">匿名响应额外字段</h4>
+    <pre>{
+  <span style="color:var(--accent)">"claimToken"</span>: <span style="color:#4ade80">"abc123..."</span>,
+  <span style="color:var(--accent)">"claimUrl"</span>: <span style="color:#4ade80">"https://here.now/claim?slug=bright-canvas-a7k2&amp;token=abc123..."</span>,
+  <span style="color:var(--accent)">"expiresAt"</span>: <span style="color:#4ade80">"2026-02-19T01:00:00.000Z"</span>,
+  <span style="color:var(--accent)">"anonymous"</span>: <span style="color:#c084fc">true</span>
+}</pre>
+    <div class="callout callout-warn" style="margin-top:1rem">
+      <strong>⚠️ 重要：</strong><code>claimToken</code> 和 <code>claimUrl</code> 仅返回一次，无法恢复。务必保存并分享给用户，以便永久保留站点。
+    </div>
+  </section>
+
+  <!-- API: Upload -->
+  <section id="api-upload" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">上传文件</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);margin:0 0 1rem;font-size:0.88rem">对 <code>upload.uploads[]</code> 中的每个条目，PUT 文件到预签名 URL：</p>
+    <pre><span style="color:var(--accent)">$</span> curl -X PUT <span style="color:#fbbf24">"&lt;presigned-url&gt;"</span> \
+  -H <span style="color:#fbbf24">"Content-Type: &lt;content-type&gt;"</span> \
+  --data-binary @&lt;local-file&gt;</pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">上传可以并行运行。预签名 URL 有效期为 1 小时。</p>
+  </section>
+
+  <!-- API: Finalize -->
+  <section id="api-finalize" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">完成发布</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-post">POST</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug/finalize</code>
+    </div>
+    <pre>{ <span style="color:var(--accent)">"versionId"</span>: <span style="color:#4ade80">"01J..."</span> }</pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">拥有站点需要 <code>Authorization: Bearer</code>。匿名站点无需 auth 即可 finalize。</p>
+    <h4 style="font-size:0.92rem;font-weight:600;margin:1.25rem 0 0.5rem;color:var(--text-primary)">响应</h4>
+    <pre>{
+  <span style="color:var(--accent)">"success"</span>: <span style="color:#c084fc">true</span>,
+  <span style="color:var(--accent)">"slug"</span>: <span style="color:#4ade80">"bright-canvas-a7k2"</span>,
+  <span style="color:var(--accent)">"siteUrl"</span>: <span style="color:#4ade80">"https://bright-canvas-a7k2.here.now/"</span>,
+  <span style="color:var(--accent)">"currentVersionId"</span>: <span style="color:#4ade80">"01J..."</span>
+}</pre>
+  </section>
+
+  <!-- API: Update -->
+  <section id="api-update" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">更新现有站点</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-put">PUT</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">请求体与创建相同。返回新的预签名上传 URL 和新的 <code>finalizeUrl</code>。</p>
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      <div style="display:flex;align-items:baseline;gap:0.5rem;color:var(--text-secondary);font-size:0.85rem"><span style="color:var(--accent)">•</span> <strong>拥有站点</strong>：需要 <code>Authorization: Bearer &lt;API_KEY&gt;</code></div>
+      <div style="display:flex;align-items:baseline;gap:0.5rem;color:var(--text-secondary);font-size:0.85rem"><span style="color:var(--accent)">•</span> <strong>匿名站点</strong>：在请求体中包含 <code>claimToken</code>，更新不会延长过期时间</div>
+      <div style="display:flex;align-items:baseline;gap:0.5rem;color:var(--text-secondary);font-size:0.85rem"><span style="color:var(--accent)">•</span> <strong>增量部署</strong>：包含 <code>hash</code>（SHA-256 hex），匹配文件跳过上传</div>
+    </div>
+  </section>
+
+  <!-- API: Claim -->
+  <section id="api-claim" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">认领匿名站点</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-post">POST</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug/claim</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 0.75rem">需要 <code>Authorization: Bearer &lt;API_KEY&gt;</code>。</p>
+    <pre>{ <span style="color:var(--accent)">"claimToken"</span>: <span style="color:#4ade80">"abc123..."</span> }</pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">转移所有权，移除过期时间。用户也可以访问 <code>claimUrl</code> 并登录来认领。</p>
+  </section>
+
+  <!-- API: Password -->
+  <section id="api-password" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">密码保护</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">为任何站点添加密码，服务器端强制 — 密码验证前内容不会发送到浏览器。</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem">
+      <div class="card" style="padding:1.25rem">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem;color:var(--success)">设置密码</div>
+        <pre style="margin:0">{"password": "secret"}</pre>
+      </div>
+      <div class="card" style="padding:1.25rem">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem;color:#f87171">移除密码</div>
+        <pre style="margin:0">{"password": null}</pre>
+      </div>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">通过 <code>PATCH /api/v1/publish/:slug/metadata</code> 设置。密码保护在重新部署后依然存在。需要认证站点。</p>
+  </section>
+
+  <!-- API: Duplicate -->
+  <section id="api-duplicate" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">复制站点</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-post">POST</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug/duplicate</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">服务器端创建完整副本，无需客户端上传。需要 <code>Authorization</code> 且拥有源站点。</p>
+    <pre><span style="color:var(--accent)">$</span> curl -sS -X POST https://here.now/api/v1/publish/{slug}/duplicate \
+  -H <span style="color:#fbbf24">"Authorization: Bearer {API_KEY}"</span> \
+  -H <span style="color:#fbbf24">"Content-Type: application/json"</span> \
+  -d <span style="color:#4ade80">'{}'</span></pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">复制所有文件和 viewer 元数据。不复制密码保护、handle/域名链接或 TTL。</p>
+  </section>
+
+  <!-- API: Metadata -->
+  <section id="api-metadata" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">更新元数据</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-patch">PATCH</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug/metadata</code>
+    </div>
+    <pre>{
+  <span style="color:var(--accent)">"ttlSeconds"</span>: 604800,
+  <span style="color:var(--accent)">"viewer"</span>: {
+    <span style="color:var(--accent)">"title"</span>: <span style="color:#4ade80">"Updated title"</span>,
+    <span style="color:var(--accent)">"description"</span>: <span style="color:#4ade80">"New description"</span>
+  },
+  <span style="color:var(--accent)">"password"</span>: <span style="color:#4ade80">"secret123"</span>
+}</pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">所有字段可选。需要 <code>Authorization: Bearer &lt;API_KEY&gt;</code>。</p>
+  </section>
+
+  <!-- API: Delete -->
+  <section id="api-delete" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">删除站点</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-delete">DELETE</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0">需要 <code>Authorization: Bearer &lt;API_KEY&gt;</code>。硬删除站点和所有存储文件。</p>
+  </section>
+
+  <!-- API: List -->
+  <section id="api-list" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">列出站点</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-get">GET</span>
+      <code style="font-size:0.85rem">/api/v1/publishes</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">需要 <code>Authorization</code>。返回认证用户拥有的所有站点。</p>
+    <pre>{
+  <span style="color:var(--accent)">"publishes"</span>: [
+    {
+      <span style="color:var(--accent)">"slug"</span>: <span style="color:#4ade80">"bright-canvas-a7k2"</span>,
+      <span style="color:var(--accent)">"siteUrl"</span>: <span style="color:#4ade80">"https://bright-canvas-a7k2.here.now/"</span>,
+      <span style="color:var(--accent)">"status"</span>: <span style="color:#4ade80">"active"</span>,
+      <span style="color:var(--accent)">"currentVersionId"</span>: <span style="color:#4ade80">"01J..."</span>
+    }
+  ]
+}</pre>
+  </section>
+
+  <!-- API: Detail -->
+  <section id="api-detail" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">获取站点详情</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-get">GET</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">返回当前 live 版本的元数据和完整文件清单 <code>manifest</code>。</p>
+    <pre>{
+  <span style="color:var(--accent)">"slug"</span>: <span style="color:#4ade80">"bright-canvas-a7k2"</span>,
+  <span style="color:var(--accent)">"manifest"</span>: [
+    { <span style="color:var(--accent)">"path"</span>: <span style="color:#4ade80">"index.html"</span>, <span style="color:var(--accent)">"size"</span>: 1234 },
+    { <span style="color:var(--accent)">"path"</span>: <span style="color:#4ade80">"assets/app.js"</span>, <span style="color:var(--accent)">"size"</span>: 999 }
+  ]
+}</pre>
+  </section>
+
+  <!-- API: Refresh -->
+  <section id="api-refresh" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">刷新上传 URL</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span class="badge badge-post">POST</span>
+      <code style="font-size:0.85rem">/api/v1/publish/:slug/uploads/refresh</code>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0">返回待处理上传的新鲜预签名 URL（相同版本）。用于 URL 在上传中途过期时。</p>
+  </section>
+
+  <!-- Handle -->
+  <section id="handle" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">Handle</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">Handle 提供稳定的子域名如 <code>yourname.here.now</code>，将位置路由到你的站点。认领 handle 需要付费计划（Hobby 或以上）。</p>
+    <div style="overflow-x:auto">
+      <table class="api-table">
+        <thead><tr><th>操作</th><th>端点</th></tr></thead>
+        <tbody>
+          <tr><td>创建</td><td><span class="badge badge-post" style="margin-right:0.5rem">POST</span> <code>/api/v1/handle</code></td></tr>
+          <tr><td>获取</td><td><span class="badge badge-get" style="margin-right:0.5rem">GET</span> <code>/api/v1/handle</code></td></tr>
+          <tr><td>更新</td><td><span class="badge badge-patch" style="margin-right:0.5rem">PATCH</span> <code>/api/v1/handle</code></td></tr>
+          <tr><td>删除</td><td><span class="badge badge-delete" style="margin-right:0.5rem">DELETE</span> <code>/api/v1/handle</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem"><strong>格式：</strong>小写字母/数字/连字符，2-30 字符，无前导/尾随连字符。</p>
+  </section>
+
+  <!-- Custom Domain -->
+  <section id="custom-domain" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">自定义域名</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">使用自己的域名托管站点。Free 计划：1 个域名。Hobby 计划：最多 5 个。</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.25rem">
+      <div class="card" style="padding:1.25rem">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem;color:var(--accent)">子域名</div>
+        <p style="color:var(--text-secondary);font-size:0.82rem;margin:0">如 <code>docs.example.com</code>，添加 CNAME 记录指向 <code>fallback.here.now</code></p>
+      </div>
+      <div class="card" style="padding:1.25rem">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem;color:var(--accent-warm)">Apex 域名</div>
+        <p style="color:var(--text-secondary);font-size:0.82rem;margin:0">如 <code>example.com</code>，添加 ALIAS 记录 + TXT 验证记录</p>
+      </div>
+    </div>
+
+    <pre><span style="color:var(--accent)">$</span> curl -sS https://here.now/api/v1/domains \
+  -H <span style="color:#fbbf24">"Authorization: Bearer &lt;API_KEY&gt;"</span> \
+  -H <span style="color:#fbbf24">"Content-Type: application/json"</span> \
+  -d <span style="color:#4ade80">'{"domain": "example.com"}'</span></pre>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.75rem">DNS 验证后自动配置 SSL。状态从 <code>pending</code> 变为 <code>active</code>。</p>
+  </section>
+
+  <!-- Links -->
+  <section id="links" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">链接</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">链接将站点连接到 handle 或自定义域名上的位置。</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.25rem">
+      <div class="card" style="padding:1.25rem">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem">链接到 Handle</div>
+        <pre style="margin:0;font-size:0.78rem">{
+  <span style="color:var(--accent)">"location"</span>: <span style="color:#4ade80">"docs"</span>,
+  <span style="color:var(--accent)">"slug"</span>: <span style="color:#4ade80">"bright-canvas-a7k2"</span>
+}</pre>
+      </div>
+      <div class="card" style="padding:1.25rem">
+        <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem">链接到域名</div>
+        <pre style="margin:0;font-size:0.78rem">{
+  <span style="color:var(--accent)">"location"</span>: <span style="color:#4ade80">""</span>,
+  <span style="color:var(--accent)">"slug"</span>: <span style="color:#4ade80">"bright-canvas-a7k2"</span>,
+  <span style="color:var(--accent)">"domain"</span>: <span style="color:#4ade80">"example.com"</span>
+}</pre>
+      </div>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.85rem">根位置使用 <code>"location": ""</code>。路径参数中用 <code>__root__</code> 表示根位置。链接更新全球传播最多 60 秒。</p>
+  </section>
+
+  <!-- Serving rules -->
+  <section id="serving" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">服务规则</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem">
+      <div style="display:flex;align-items:baseline;gap:0.75rem">
+        <span class="step-num" style="width:28px;height:28px;font-size:0.75rem;border-radius:8px">1</span>
+        <span style="color:var(--text-secondary);font-size:0.88rem">根目录存在 <code>index.html</code>，直接提供</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:0.75rem">
+        <span class="step-num" style="width:28px;height:28px;font-size:0.75rem;border-radius:8px">2</span>
+        <span style="color:var(--text-secondary);font-size:0.88rem">整个站点只有一个文件，提供 auto-viewer（图片、PDF、视频等）</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:0.75rem">
+        <span class="step-num" style="width:28px;height:28px;font-size:0.75rem;border-radius:8px">3</span>
+        <span style="color:var(--text-secondary);font-size:0.88rem">子目录中存在 <code>index.html</code>，提供找到的第一个</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:0.75rem">
+        <span class="step-num" style="width:28px;height:28px;font-size:0.75rem;border-radius:8px">4</span>
+        <span style="color:var(--text-secondary);font-size:0.88rem">否则，提供自动生成的目录列表</span>
+      </div>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:1rem">直接文件路径始终有效：<code>https://&lt;slug&gt;.here.now/report.pdf</code></p>
+  </section>
+
+  <!-- Limits -->
+  <section id="limits" style="margin-bottom:3.5rem">
+    <h2 class="section-title" style="font-size:1.5rem;margin:0 0 1rem">限制</h2>
+    <div class="glow-line" style="margin-bottom:1.5rem"></div>
+    <div style="overflow-x:auto">
+      <table class="api-table">
+        <thead><tr><th></th><th>匿名</th><th>认证</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:500">最大文件大小</td><td>250 MB</td><td>5 GB</td></tr>
+          <tr><td style="font-weight:500">过期时间</td><td>24 小时</td><td>永久（或自定义 TTL）</td></tr>
+          <tr><td style="font-weight:500">站点数量</td><td>—</td><td>500 免费 / Hobby 无限</td></tr>
+          <tr><td style="font-weight:500">存储空间</td><td>—</td><td>10 GB 免费 / 100 GB Hobby</td></tr>
+          <tr><td style="font-weight:500">速率限制</td><td>5 次/小时/IP</td><td>60 次/小时免费 / 200 次/小时 Hobby</td></tr>
+          <tr><td style="font-weight:500">需要账户</td><td>否</td><td>是</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="text-align:center;padding:2rem 0;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:0.78rem">
+    <p style="margin:0">© 2026 <a href="https://here.now" style="color:var(--accent);text-decoration:none">here.now</a> — 免费即时 Web 托管服务</p>
+  </footer>
+
+</main>
+</div>
+
+<script>
+// Mobile menu
+const menuBtn = document.getElementById('menuBtn');
+const overlay = document.getElementById('mobileOverlay');
+const mobileSidebar = document.getElementById('mobileSidebar');
+const sidebarNav = document.getElementById('sidebarNav');
+
+// Show menu button on mobile
+function checkMobile() {
+  menuBtn.style.display = window.innerWidth <= 1024 ? 'block' : 'none';
+  if (window.innerWidth > 1024) {
+    overlay.classList.remove('open');
+    mobileSidebar.classList.remove('open');
+  }
+}
+checkMobile();
+window.addEventListener('resize', checkMobile);
+
+// Clone nav into mobile sidebar
+mobileSidebar.innerHTML = sidebarNav.innerHTML;
+
+function toggleMobile() {
+  overlay.classList.toggle('open');
+  mobileSidebar.classList.toggle('open');
+}
+
+// Close mobile menu on nav click
+mobileSidebar.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    overlay.classList.remove('open');
+    mobileSidebar.classList.remove('open');
   });
-  
-  <span class="text-purple-400">const</span> <span class="text-blue-400">data</span> <span class="text-slate-300">=</span> <span class="text-purple-400">await</span> <span class="text-blue-400">response</span>.<span class="text-blue-400">json</span>();
-  
-  <span class="text-slate-400">// uploadUrls 只包含需要更新的文件</span>
-  <span class="text-blue-400">console</span>.<span class="text-blue-400">log</span>(<span class="text-yellow-400">`需要更新 ${data.uploadUrls.length} 个文件`</span>);
-  
-  <span class="text-slate-400">// 上传需要更新的文件...</span>
-  <span class="text-slate-400">// 最终化...</span>
-}</code></pre>
-                </div>
-            </div>
-        </div>
-    </section>
+});
 
-    <!-- FAQ Section -->
-    <section id="faq" class="py-24 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-display font-bold text-4xl sm:text-5xl mb-4">常见问题</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-400">解答您可能遇到的问题</p>
-            </div>
-            <div class="max-w-3xl mx-auto space-y-4">
-                <div class="p-6 rounded-2xl glass">
-                    <h3 class="font-semibold text-lg mb-2">匿名站点过期后如何恢复？</h3>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">匿名站点在24小时后会自动删除，无法恢复。如果需要永久存储，请在创建站点后使用 claimToken 将其认领到您的账户。</p>
-                </div>
-                <div class="p-6 rounded-2xl glass">
-                    <h3 class="font-semibold text-lg mb-2">如何绑定自定义域名？</h3>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">对于子域名，添加 CNAME 记录指向 <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">fallback.here.now</code>。对于根域名，添加 ALIAS 记录和 TXT 验证记录。SSL 证书会自动配置。</p>
-                </div>
-                <div class="p-6 rounded-2xl glass">
-                    <h3 class="font-semibold text-lg mb-2">支持哪些文件类型？</h3>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">支持所有静态文件类型，包括 HTML、CSS、JavaScript、图片（PNG、JPG、SVG、WebP）、字体、PDF、视频等。</p>
-                </div>
-                <div class="p-6 rounded-2xl glass">
-                    <h3 class="font-semibold text-lg mb-2">密码保护是如何工作的？</h3>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">密码保护在服务器端验证，访问者需要输入正确的密码才能查看内容。密码和受保护的内容都不会发送到浏览器，直到验证通过。</p>
-                </div>
-                <div class="p-6 rounded-2xl glass">
-                    <h3 class="font-semibold text-lg mb-2">部署后多久可以访问？</h3>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">通常情况下，最终化完成后立即可以访问。全球 CDN 传播最多需要 60 秒。</p>
-                </div>
-                <div class="p-6 rounded-2xl glass">
-                    <h3 class="font-semibold text-lg mb-2">如何更新已发布的站点？</h3>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">使用 PUT /api/v1/publish/:slug 端点进行增量部署。提供文件的 SHA-256 hash，系统会自动识别需要更新的文件。</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Comparison -->
-    <section id="pricing" class="py-24 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-primary-50/30 to-transparent dark:from-primary-900/10 dark:to-transparent"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-display font-bold text-4xl sm:text-5xl mb-4">服务限制对比</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-400">选择适合您需求的模式</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full rounded-2xl overflow-hidden glass">
-                    <thead class="bg-slate-100/50 dark:bg-slate-800/50">
-                        <tr>
-                            <th class="p-4 text-left font-semibold">功能</th>
-                            <th class="p-4 text-center font-semibold">匿名模式</th>
-                            <th class="p-4 text-center font-semibold text-primary-600">认证模式（免费）</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                        <tr>
-                            <td class="p-4">最大文件大小</td>
-                            <td class="p-4 text-center">250 MB</td>
-                            <td class="p-4 text-center font-semibold text-primary-600">5 GB</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">过期时间</td>
-                            <td class="p-4 text-center">24小时</td>
-                            <td class="p-4 text-center font-semibold text-primary-600">永久/自定义</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">站点数量</td>
-                            <td class="p-4 text-center">-</td>
-                            <td class="p-4 text-center font-semibold text-primary-600">500个</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">存储空间</td>
-                            <td class="p-4 text-center">-</td>
-                            <td class="p-4 text-center font-semibold text-primary-600">10 GB</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">速率限制</td>
-                            <td class="p-4 text-center">5次/小时/IP</td>
-                            <td class="p-4 text-center font-semibold text-primary-600">60次/小时</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">自定义域名</td>
-                            <td class="p-4 text-center text-slate-400">✗</td>
-                            <td class="p-4 text-center text-green-500 font-semibold">✓</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">密码保护</td>
-                            <td class="p-4 text-center text-slate-400">✗</td>
-                            <td class="p-4 text-center text-green-500 font-semibold">✓</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">站点管理</td>
-                            <td class="p-4 text-center text-slate-400">claimToken</td>
-                            <td class="p-4 text-center text-green-500 font-semibold">完整 API</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-12 border-t border-slate-200 dark:border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-                        <span class="text-white font-display font-bold text-sm">H</span>
-                    </div>
-                    <span class="font-display font-bold text-xl">here.now</span>
-                </div>
-                <p class="text-slate-500 dark:text-slate-400 text-sm text-center">
-                    基于 here.now 官方文档创建的中文教程网站
-                </p>
-                <div class="flex items-center gap-6">
-                    <a href="https://here.now/docs" target="_blank" class="text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-sm">官方文档</a>
-                    <span class="text-slate-300 dark:text-slate-700">|</span>
-                    <span class="text-slate-500 dark:text-slate-400 text-sm">© 2026</span>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Dark mode toggle
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-        }
-        
-        if (localStorage.getItem('darkMode') === 'true' || 
-            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
-        
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // Tab switching
-        function switchTab(section, lang) {
-            // Hide all code blocks in this section
-            document.querySelectorAll(`[id^="code-${section}-"]`).forEach(el => el.classList.add('hidden'));
-            // Show selected
-            document.getElementById(`code-${section}-${lang}`).classList.remove('hidden');
-            // Update tab styles
-            document.querySelectorAll(`#tab-${section}-${lang}`).forEach(el => {
-                document.querySelectorAll(`[id^="tab-${section}-"]`).forEach(tab => {
-                    tab.classList.remove('tab-active');
-                    tab.classList.add('text-slate-500');
-                });
-                el.classList.add('tab-active');
-                el.classList.remove('text-slate-500');
-            });
-        }
-
-        // Mode selection
-        function selectMode(mode) {
-            document.getElementById(`mode-${mode}`).checked = true;
-            const authSetup = document.getElementById('auth-setup');
-            if (mode === 'anonymous') {
-                authSetup.style.opacity = '0.5';
-            } else {
-                authSetup.style.opacity = '1';
-            }
-        }
-    </script>
+// Active nav highlight
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+function highlightNav() {
+  let current = '';
+  sections.forEach(s => {
+    if (s.getBoundingClientRect().top <= 100) current = s.id;
+  });
+  navLinks.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', highlightNav, { passive: true });
+highlightNav();
+</script>
 </body>
 </html>
